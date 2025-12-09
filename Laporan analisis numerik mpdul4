@@ -1,0 +1,100 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# data titik
+x = np.array([1.0, 2.0, 3.0])
+y = np.array([3.0, 8.0, 15.0])
+xp = 2.5
+
+def lagrange_interpolation(x, y, xp):
+    """
+    Menghitung nilai interpolasi Lagrange pada titik xp
+    x, y: numpy array dengan panjang sama
+    xp: skalar
+    """
+    p = 0.0
+    n = len(x)
+    for i in range(n):
+        L = 1.0
+        for j in range(n):
+            if j != i:
+                L *= (xp - x[j]) / (x[i] - x[j])
+        p += y[i] * L
+    return p
+
+# Hitung nilai pada x = 2.5
+L_value = lagrange_interpolation(x, y, xp)
+print("lagrange f(2.5) =", L_value)   # seharusnya 11.25
+
+# --------------------------------------
+# BAGIAN MATPLOTLIB UNTUK GRAFIK
+# --------------------------------------
+
+# Membuat titik untuk kurva interpolasi
+x_plot = np.linspace(min(x), max(x), 200)
+y_plot = [lagrange_interpolation(x, y, xi) for xi in x_plot]
+
+plt.plot(x_plot, y_plot, label="Polinomial Lagrange")
+plt.scatter(x, y, color="red", label="Titik Data")
+plt.scatter(xp, L_value, color="green", label=f"f({xp}) = {L_value}")
+plt.title("Interpolasi Lagrange")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.grid(True)
+plt.legend()
+plt.show()
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Fungsi selisih terbagi Newton
+def divided_diff(x, y):
+    n = len(x)
+    coef = np.zeros([n, n])
+    coef[:,0] = y
+
+    for j in range(1, n):
+        for i in range(n - j):
+            coef[i][j] = (coef[i+1][j-1] - coef[i][j-1]) / (x[i+j] - x[i])
+
+    return coef[0]  # koefisien baris pertama
+
+
+# Fungsi polinomial Newton
+def newton_poly(coef, x_data, x):
+    n = len(coef)
+    p = coef[0]
+    for k in range(1, n):
+        term = coef[k]
+        for j in range(k):
+            term *= (x - x_data[j])
+        p += term
+    return p
+
+# Data titik
+x_data = np.array([1, 2, 3])
+y_data = np.array([3, 8, 15])
+
+# Titik yang dicari
+x_val = 2.5
+
+# Hitung koefisien Newton
+coef = divided_diff(x_data, y_data)
+
+# Hitung nilai interpolasi
+y_val = newton_poly(coef, x_data, x_val)
+print("Hasil interpolasi Newton pada x =", x_val, "adalah:", y_val)
+
+# Plot hasil interpolasi
+x_plot = np.linspace(min(x_data), max(x_data), 200)
+y_plot = [newton_poly(coef, x_data, xp) for xp in x_plot]
+
+plt.plot(x_plot, y_plot, label='Polinomial Newton')
+plt.scatter(x_data, y_data, color='red', label='Titik Data')
+plt.scatter(x_val, y_val, color='green', label=f'f({x_val}) = {y_val}')
+plt.xlabel("x")
+plt.ylabel("y")
+plt.title("Interpolasi Newton")
+plt.legend()
+plt.grid(True)
+plt.show()
